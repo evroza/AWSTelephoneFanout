@@ -1,0 +1,80 @@
+# Welcome to serverless. Read the docs
+# https://serverless.com/framework/docs/
+
+# Serverless.yml is the configuration the CLI
+# uses to deploy your code to your provider of choice
+
+# The `service` block is the name of the service
+service: serverless-auth
+
+plugins:
+  - serverless-offline
+
+# Configuration variables
+custom:
+  secrets: ${file(secrets.json)}
+
+# The `provider` block defines where your service will be deployed
+provider:
+  name: aws
+  runtime: nodejs6.10
+  profile: default
+  region: ap-south-1
+  environment:
+    JWT_SECRET: ${self:custom.secrets.jwtSecret}
+  iamRoleStatements:
+    - Effect: Allow
+      Action: 
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:ap-south-1:*:*"
+
+# The `functions` block defines what code to deploy
+functions:
+  login:
+    handler: functions/login.handler
+    events:
+      - http:
+          path: sessions
+          method: post
+          cors: true
+  authorize:
+    handler: functions/authorize.handler
+  getUnProtectedData:
+    handler: functions/unprotected.handler
+    events:
+      - http:
+          path: unprotected
+          method: get
+          cors: true
+          # authorizer: authorize # getUnauthData are public
+  getProtected:
+    handler: functions/protected.handler
+    events:
+      - http:
+          path: protected
+          method: get
+          cors: true
+          authorizer: authorize # protected endpoint requires authorization
+
+resources:
+  Resources:
+    AuthStatusTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+            - AttributeName: id
+              KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:service}-${self:provider.stage}-AuthStatusTable
