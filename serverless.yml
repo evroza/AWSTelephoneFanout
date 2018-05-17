@@ -61,6 +61,13 @@ functions:
           method: get
           cors: true
           authorizer: authorize # protected endpoint requires authorization
+  addTelephone:
+    handler: functions/addTelephone.handler
+    events:
+      - http:
+          path: register
+          method: post
+          cors: true
 
 resources:
   Resources:
@@ -69,12 +76,12 @@ resources:
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
-          - AttributeName: id
+          - AttributeName: TelephoneSerial
             AttributeType: S
         KeySchema:
-            - AttributeName: id
+            - AttributeName: TelephoneSerial
               KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:service}-${self:provider.stage}-AuthStatusTable
+        TableName: ${self:service}-${self:provider.stage}-AuthStatusTable-v1.1
