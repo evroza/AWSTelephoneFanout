@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const telephoneUtils = require('../lib/users');
+const telephoneUtils = require('../lib/telephoneUtils');
 
 
-const JWT_EXPIRATION_TIME = '5m';
+const JWT_EXPIRATION_TIME = Math.floor(Date.now() / 1000) + (60 * 60);
 
 /**
   * POST /sessions
@@ -50,6 +50,14 @@ module.exports.handler = (event, context, callback) => {
 			console.log(`JWT issued: ${token}`);
 			// Before Submitting response, Log the new token to the user's Record in DynamoDB
 			// Also set Active status to 'true'
+			// Valid Token must contain the telephone serial in it's payload
+			try {
+				telephoneUtils.updateStatTok(token, true);
+			} catch(e){
+				console.error("FAILED: Update of Telephone token unsuccessful");
+				console.error(e);
+			}
+			
 			
 			
 			const response = { // Success response
