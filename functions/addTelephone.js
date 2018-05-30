@@ -53,6 +53,7 @@ module.exports.handler = (event, context, callback) => {
 			TelephoneSerial: data.telephoneSerial,
 			Password: data.password,
 			Active: false,
+			groups: data.groups,
 			CreatedAt: timestamp, // Remember to correctly implement this to store correct timestamp of creation time
 			LastLogin: timestamp // Remember to correctly implement this to store correct timestamp of last access
 			

@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 const telephoneUtils = require('../lib/telephoneUtils');
 
+const _ = require('lodash');
 
-const JWT_EXPIRATION_TIME = Math.floor(Date.now() / 1000) + (60 * 60);
+const JWT_EXPIRATION_TIME = '2h'; // 2hr token validity
 
 /**
   * POST /sessions
@@ -39,8 +40,11 @@ module.exports.handler = (event, context, callback) => {
 	// telephoneUtils.login returns a promise!
 	telephoneUtils.login(telephoneSerial, password).then(function(result){
 		// telephone Succesfully logged in/ fetched data
-		const telephone = result;	
-	
+		let telephone = result;	
+		//First omit the JWT token from the object before signing 
+			//- otherwise the JWT generated get's longer with each generation and store
+			telephone = _.omit(telephone, 'JWTToken');
+			
 		console.log(telephone);
 
 		if(telephone){
